@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EduAssist LLMOps - unexecuted notebook</title><style>
+body{margin:0;background:#f2f5f7;color:#243548;font:16px/1.6 system-ui,sans-serif}main{max-width:980px;margin:auto;background:white;padding:44px}h1{font-size:32px;line-height:1.2;color:#135d68}h2{margin-top:42px;color:#135d68;font-size:23px}p{white-space:normal}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf2f6;border-radius:6px;padding:18px;font:13px/1.6 ui-monospace,monospace}summary{font-size:13px;color:#5b6874;cursor:pointer}aside{padding:16px 20px;background:#fff3d2;border-left:4px solid #b8861c;margin-bottom:30px}footer{font-size:13px;color:#627584;margin-top:40px}@media(max-width:600px){main{padding:20px}h1{font-size:27px}}
+</style><main><aside><strong>UNEXECUTED STARTER</strong><br>Static HTML export of notebook source. Model, dependencies, measurements and MLflow evidence are pending. No model or software is downloaded by this document.</aside><h1>EduAssist: local LLMOps assignment</h1><p>**Starter status: execution pending.** No model has been downloaded or called, and no measurements or MLflow screenshots have been collected. This notebook and its companion modules do not download models, install software, or use paid APIs.</p><p>The assignment permits a locally hosted open-source model. Supply your model and an existing local OpenAI-compatible server when you are ready. Read `README.md` first. All results must come from your own actual execution; inspect answers and explain limitations before submission.</p><h2>1. Purpose: MLOps and LLMOps</h2><p>MLOps versions datasets, training pipelines and models. LLMOps also versions prompts, retrieval context and output constraints while tracking inference latency, tokens, cost and response quality. Here EduAssist needs JSON with `answer`, `confidence` and `key_points`.<br></p><details open><summary>Python - unexecuted</summary><pre><code>from pathlib import Path
+import json
+import pandas as pd
+from IPython.display import display, Markdown, Image
+
+ROOT = Path.cwd()
+assert (ROOT / &quot;eduassist&quot;).is_dir(), &quot;Open this notebook with mlops as the working directory.&quot;
+from eduassist.config import load_settings
+from eduassist.experiment import run_experiment, read_inputs
+from eduassist.economics import token_costs
+from eduassist.evaluation import json_checks
+from eduassist.reporting import write_report, create_charts
+
+pd.set_option(&quot;display.max_columns&quot;, 30)
+pd.set_option(&quot;display.precision&quot;, 8)
+</code></pre></details><h2>2. Configure your existing local model</h2><p>Edit `settings.json`: endpoint URL, model name used by your server, model revision, server/API version, generation settings and hosting assumption. `LOCAL_LLM_URL` can override the URL. Only literal loopback URLs are accepted. An optional local authentication key comes from `LOCAL_LLM_API_KEY`; never put a key in this notebook or settings file. A local server without authentication requires no key.</p><p>The default hosting reference is USD 0.134/hour for HF AWS intel-spr x4, checked 2026-11-03. This is a hypothetical cost scenario; no endpoint is created and no account is billed.<br></p><details open><summary>Python - unexecuted</summary><pre><code>settings = load_settings()
+display(pd.DataFrame([
+    {&quot;setting&quot;: key, &quot;value&quot;: str(value)}
+    for key, value in settings.items() if key != &quot;hosting&quot;
+]))
+display(pd.DataFrame([settings[&quot;hosting&quot;]]))
+</code></pre></details><h2>3. Fixed evaluation questions and exact prompt versions</h2><p>Every prompt uses the same five questions. The templates reproduce the assignment wording. No JSON mode or schema grammar is supplied to the server, so this measures prompt compliance. The model&#x27;s own tokenizer supplies the usage counts.<br></p><details open><summary>Python - unexecuted</summary><pre><code>templates, questions = read_inputs()
+display(pd.DataFrame(questions)[[&quot;question_id&quot;, &quot;question&quot;]])
+for version, template in templates.items():
+    print(f&quot;\n{version}\n{template}\n&quot;)
+</code></pre></details><h2>4. Execute 15 local requests when ready</h2><p>Leave the switch below `False` to inspect saved evidence without calling a model. Set it to `True` only after you have supplied the model, installed the libraries yourself and started the local server. The workflow rotates prompt order, disables prompt caching where supported, uses temperature zero and seed 42, and makes no automatic retries. Timing includes HTTP overhead but excludes launching or downloading the model.</p><p>A rerun creates a new batch of raw evidence and MLflow runs. It does not create duplicate registry versions when an unchanged saved template can be reused. Logical `v1`/`v2`/`v3` labels can correspond to registry versions greater than 3 after intentional template edits.<br></p><details open><summary>Python - unexecuted</summary><pre><code>RUN_NEW_EXPERIMENT = False
+
+if RUN_NEW_EXPERIMENT:
+    measured_rows, measured_summaries, metadata = run_experiment()
+    create_charts(measured_summaries)
+    print(&quot;Generated report:&quot;, write_report(measured_rows, measured_summaries, metadata))
+else:
+    print(&quot;No inference requested. Reading existing files only.&quot;)
+
+requests = pd.read_csv(ROOT / &quot;latency_tokens_cost.csv&quot;)
+comparison = pd.read_csv(ROOT / &quot;prompt_evaluation_results.csv&quot;)
+if requests.empty:
+    display(Markdown(&quot;**Pending:** supply your local model and run the experiment to collect real data.&quot;))
+</code></pre></details><h2>5. Task 1: latency (2 marks)</h2><p>The five basic-prompt requests form the Task 1 table. All 15 requests appear in the main CSV. UTC start/end timestamps document when each request occurred; `time.perf_counter()` measures elapsed seconds. Statistics use sample standard deviation (`ddof=1`) and successful calls. Errors and truncations remain in the request table.<br></p><details open><summary>Python - unexecuted</summary><pre><code>latency_columns = [&quot;question_id&quot;, &quot;prompt_version&quot;, &quot;model&quot;, &quot;start_time_utc&quot;, &quot;end_time_utc&quot;, &quot;latency_seconds&quot;, &quot;response_status&quot;]
+if not requests.empty:
+    task1 = requests[requests.prompt_version == &quot;v1&quot;]
+    display(task1[latency_columns])
+    successful = requests[requests.response_status == &quot;success&quot;]
+    display(successful.groupby(&quot;prompt_version&quot;).latency_seconds.agg(
+        [&quot;count&quot;, &quot;mean&quot;, &quot;median&quot;, &quot;min&quot;, &quot;max&quot;, &quot;std&quot;]))
+    basic_success = task1[task1.response_status == &quot;success&quot;]
+    if not basic_success.empty:
+        slowest = basic_success.loc[basic_success.latency_seconds.idxmax()]
+        print(f&quot;Slowest Task 1 call: {slowest.question_id}, {slowest.latency_seconds:.3f}s, {int(slowest.output_tokens)} output tokens.&quot;)
+        print(&quot;Possible causes: answer length, first-call initialization, CPU contention or HTTP overhead. These are hypotheses; five requests cannot prove causality.&quot;)
+else:
+    print(&quot;Latency measurements and interpretation of the observed slowest request are pending.&quot;)
+</code></pre></details><h2>6. Task 2: tokenizer counts and cost (3 marks)</h2><p>Input cost = input tokens / 1,000,000 x input USD per million. Output cost uses the separate output rate. Total request cost is their sum. Projected monthly cost = average request cost x 10,000.</p><p>For the permitted local-model alternative, we derive **estimated effective token rates** from a published hourly hosting assumption. If every usable reply contains llama.cpp phase timings, pool input processing time and generation time separately across all prompts. Otherwise pool measured request seconds over all tokens and use the same effective rate for both token types. The same pooled rates apply to every prompt, avoiding prompt-specific prices. These rates are not a vendor&#x27;s advertised token tariff.</p><p>Local hardware is not the reference cloud hardware. The projection excludes idle time, startup, minimum billing and electricity. Actual external inference spend is zero. Shorter answers are a practical cost optimization; check their effect on quality before lowering the common output cap.<br></p><details open><summary>Python - unexecuted</summary><pre><code>cost_columns = [&quot;question_id&quot;, &quot;prompt_version&quot;, &quot;input_tokens&quot;, &quot;output_tokens&quot;, &quot;total_tokens&quot;, &quot;input_cost_usd&quot;, &quot;output_cost_usd&quot;, &quot;total_cost_usd&quot;]
+if not requests.empty:
+    display(requests[cost_columns])
+    display(comparison[[&quot;prompt_version&quot;, &quot;avg_cost_per_request&quot;, &quot;projected_monthly_cost_usd&quot;]])
+    metadata = json.loads((ROOT / &quot;reports/run_metadata.json&quot;).read_text())
+    display(metadata[&quot;effective_pricing&quot;])
+else:
+    print(&quot;Token counts, effective rates, request costs and monthly projections are pending.&quot;)
+</code></pre></details><h2>7. Task 3: prompt registry, evaluation and promotion (5 marks)</h2><p>Experiment: `eduassist_llmops_assignment`. One registry prompt contains the three immutable versions with meaningful commit messages. Each run logs `avg_latency_seconds`, `avg_input_tokens`, `avg_output_tokens`, `avg_cost_per_request`, and `valid_json`.</p><p>`valid_json` = strictly parseable JSON responses / all five attempts. Exact schema compliance is tracked separately as `schema_valid_rate`. A syntactically valid list or incomplete object is not a schema pass. Duplicate keys, NaN and code fences fail strict JSON parsing. Failed or truncated calls count as failures.</p><p>`quality_score` measures reference-concept coverage; it is an explainable proxy, not an accuracy guarantee. Inspect the responses manually. Promotion requires five successful calls, JSON and schema rates of 100%, and concept coverage &gt;=80%. Eligible prompts are ranked by coverage, then estimated cost and latency. If none qualifies, no new promotion is made. Otherwise the `production` alias is assigned and read back to verify the exact template.<br></p><details open><summary>Python - unexecuted</summary><pre><code>if not comparison.empty:
+    display(comparison)
+    print((ROOT / &quot;reports/prompt_comparison.diff&quot;).read_text())
+    display(json.loads((ROOT / &quot;reports/prompt_registry.json&quot;).read_text()))
+    display(json.loads((ROOT / &quot;reports/production_alias.json&quot;).read_text()))
+    display(Image(filename=str(ROOT / &quot;reports/prompt_metrics.png&quot;)))
+else:
+    print(&quot;No MLflow results or production alias exist yet. Prompt source diffs are available in reports/prompt_comparison.diff.&quot;)
+</code></pre></details><h2>8. Inspect answer quality</h2><p>For each question, check factual accuracy, undergraduate readability and completeness using the reference concepts in `data/academic_questions.json`. Record your observations in `reports/human_review.csv`. The confidence label does not establish correctness or calibrated confidence. Add broader questions and repeats before making a real deployment decision.<br></p><details open><summary>Python - unexecuted</summary><pre><code>if not requests.empty:
+    for row in requests.itertuples():
+        print(f&quot;\n{row.prompt_version} / {row.question_id} / status={row.response_status}&quot;)
+        print(row.response_text)
+else:
+    print(&quot;No model answers to review yet.&quot;)
+</code></pre></details><h2>9. Report, screenshots and submission</h2><p>The measured run writes a 500-700 word PDF report containing a promotion justification of at least 150 words. The included draft is labeled unexecuted and must be replaced by the measured report before submission. Review and personalize the report without introducing unsupported claims.</p><p>Start the local MLflow UI with `python scripts/start_mlflow.py`, then capture experiment, registry, metrics, prompt diff and production alias views according to `screenshots/CAPTURE_GUIDE.md`. Actual screenshots cannot be supplied before execution.</p><p>Export this executed notebook: `jupyter nbconvert --to html --execute eduassist_assignment.ipynb --ExecutePreprocessor.timeout=3600`. Verify with `python scripts/verify_submission.py` and package with `python scripts/package_submission.py`. All commands are manual; this notebook never installs or downloads software.<br></p><details open><summary>Python - unexecuted</summary><pre><code>status_path = ROOT / &quot;submission_status.json&quot;
+if status_path.exists():
+    display(json.loads(status_path.read_text()))
+print(&quot;Before submission: rerun verify_submission.py after collecting all real evidence.&quot;)
+</code></pre></details><h2>References and disclosure</h2><p>- Assignment brief: MLOps Assignment - 2.pdf, pages 1-4 (user-supplied).<br>- Model option: https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF<br>- Local serving API: https://github.com/ggml-org/llama.cpp/tree/master/tools/server<br>- Published hosting cost: https://huggingface.co/docs/inference-endpoints/pricing<br>- Prompt registry: https://mlflow.org/docs/latest/genai/prompt-registry/</p><p>Model and hosting choices are configurable assumptions. API software is OpenAI-compatible; no OpenAI account or cloud API is used. This starter was prepared with AI assistance. Review your course policy and disclose assistance if required. You are responsible for executing, checking and understanding the work.<br></p><footer>Replace this source-only export with the executed nbconvert export before final submission.</footer></main></html>

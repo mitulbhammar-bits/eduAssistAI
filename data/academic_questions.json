@@ -1,0 +1,7 @@
+[
+  {"question_id":"Q1","question":"What is overfitting in machine learning, and how can it be reduced?","expected_concepts":[["training"],["new data","unseen","generaliz","generalised","generalization","test data"],["regulariz","cross-valid","cross valid","more data","simpler","dropout"]]},
+  {"question_id":"Q2","question":"What is the difference between precision and recall in binary classification?","expected_concepts":[["true positive","tp"],["false positive","fp"],["false negative","fn"]]},
+  {"question_id":"Q3","question":"Why is database normalization useful?","expected_concepts":[["redundan","duplicat"],["integrity","consisten"],["table","relation"]]},
+  {"question_id":"Q4","question":"How does gradient descent minimize a loss function?","expected_concepts":[["gradient","derivative"],["learning rate","step size"],["opposite","negative","subtract"]]},
+  {"question_id":"Q5","question":"How do supervised and unsupervised learning differ? Give one example of each.","expected_concepts":[["label"],["classification","regression"],["cluster","group"]]}
+]

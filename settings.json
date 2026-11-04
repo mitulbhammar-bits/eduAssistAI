@@ -1,0 +1,21 @@
+{
+  "endpoint_url": "http://127.0.0.1:8081/v1/chat/completions",
+  "model": "eduassist-local",
+  "model_source": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+  "model_revision": "SET_TO_YOUR_DOWNLOADED_MODEL_REVISION",
+  "runtime_version": "SET_TO_YOUR_INSTALLED_SERVER_VERSION",
+  "api_version": "Local OpenAI-compatible /v1/chat/completions",
+  "local_api_key_env": "LOCAL_LLM_API_KEY",
+  "temperature": 0,
+  "seed": 42,
+  "max_output_tokens": 512,
+  "timeout_seconds": 180,
+  "hosting": {
+    "usd_per_hour": 0.134,
+    "reference_instance": "Hugging Face AWS intel-spr x4, 4 vCPU, 8 GB RAM",
+    "source_url": "https://huggingface.co/docs/inference-endpoints/pricing",
+    "pricing_date": "2026-11-03",
+    "currency": "USD",
+    "cost_basis": "Hypothetical hosting estimate using measured local throughput; not actual charges"
+  }
+}

@@ -1,0 +1,1 @@
+prompt_version,request_count,success_count,avg_latency_seconds,avg_input_tokens,avg_output_tokens,avg_cost_per_request,projected_monthly_cost_usd,valid_json,schema_valid_rate,quality_score,recommended

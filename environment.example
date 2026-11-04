@@ -1,0 +1,7 @@
+# Optional overrides; copy values into your shell, not an API key into this file.
+LOCAL_LLM_URL=http://127.0.0.1:8081/v1/chat/completions
+LLAMA_SERVER_PATH=/absolute/path/to/your/llama-server
+LOCAL_MODEL_PATH=/absolute/path/to/your/model.gguf
+# LOCAL_LLM_API_KEY is only for an existing, authenticated local endpoint.
+# No key is required for the supplied localhost llama.cpp launcher.
+# Never add Oracle/OpenAI/cloud credentials: this project uses local inference only.

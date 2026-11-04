@@ -1,0 +1,25 @@
+{
+  "ready_for_submission": false,
+  "pending_items": [
+    "Missing: reports/assignment_report.pdf",
+    "Missing: reports/assignment_report.md",
+    "Missing: reports/promotion_justification.txt",
+    "Missing: reports/run_metadata.json",
+    "Missing: reports/prompt_registry.json",
+    "Missing: reports/production_alias.json",
+    "Missing: mlflow.db",
+    "Need exactly 15 real requests, one per version/question.",
+    "Every request must complete successfully; inspect errors/truncations.",
+    "Need all three measured prompt summaries.",
+    "Notebook needs actual execution before submission.",
+    "Replace source-only HTML with the executed notebook export.",
+    "Measured metadata, promotion or report text is pending/invalid.",
+    "Inspect all 15 answers and complete reports/human_review.csv.",
+    "Capture actual MLflow screenshot: 01_experiment.png",
+    "Capture actual MLflow screenshot: 02_prompt_registry.png",
+    "Capture actual MLflow screenshot: 03_metrics.png",
+    "Capture actual MLflow screenshot: 04_prompt_diff.png",
+    "Capture actual MLflow screenshot: 05_production_alias.png"
+  ],
+  "note": "File checks cannot establish screenshot authenticity or answer correctness; review manually."
+}
